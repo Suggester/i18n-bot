@@ -1,4 +1,3 @@
-const { colors, emoji } = require("../../config.json");
 const Persist = require("../../utils/Persistent");
 const validUrl = require("valid-url");
 /**
@@ -15,7 +14,7 @@ function checkURL (url) {
 module.exports = {
 	controls: {
 		name: "botconfig",
-		permission: 0,
+		permission: 1,
 		usage: "config <game|status|username|nick|avatar>\n\n**game:** <type> <new game>\n**status:** <new status>\n**username:** <new username>\n**nick:** <new nickname>\n**avatar**: <new avatar link>",
 		description: "Configures elements of the bot user",
 		enabled: true
@@ -66,8 +65,7 @@ module.exports = {
 			});
 
 			let gameEmbed = new Discord.MessageEmbed()
-				.setDescription(full)
-				.setColor(colors.default);
+				.setDescription(full);
 			return message.channel.send("👤 Presence set!", gameEmbed);
 		}
 		case "status": {
@@ -77,27 +75,23 @@ module.exports = {
 			switch (args[1].toLowerCase()) {
 			case "online": {
 				status = "online";
-				statusEmbed.setDescription("**Online**")
-					.setColor(colors.green);
+				statusEmbed.setDescription("**Online**");
 				break;
 			}
 			case "idle": {
 				status = "idle";
-				statusEmbed.setDescription("**Idle**")
-					.setColor(colors.yellow);
+				statusEmbed.setDescription("**Idle**");
 				break;
 			}
 			case "dnd": {
 				status = "dnd";
-				statusEmbed.setDescription("**Do Not Disturb**")
-					.setColor(colors.red);
+				statusEmbed.setDescription("**Do Not Disturb**");
 				break;
 			}
 			case "offline":
 			case "invisible": {
 				status = "invisible";
-				statusEmbed.setDescription("**Invisible**")
-					.setColor(colors.gray);
+				statusEmbed.setDescription("**Invisible**");
 				break;
 			}
 			default: {
@@ -118,8 +112,7 @@ module.exports = {
 				message.channel.startTyping();
 				await client.user.setUsername(args.splice(1).join(" "));
 				let usernameEmbed = new Discord.MessageEmbed()
-					.setDescription(client.user.username)
-					.setColor(colors.default);
+					.setDescription(client.user.username);
 				await message.channel.send("📛 Username set!", usernameEmbed);
 				await message.channel.stopTyping();
 			}
@@ -134,8 +127,7 @@ module.exports = {
 				if (nick.length > 32) return message.channel.send("Nicknames have a length limit of 32 characters.");
 				await message.guild.me.setNickname(nick).then(member => {
 					let nickEmbed = new Discord.MessageEmbed()
-						.setDescription(member.nickname)
-						.setColor(colors.default);
+						.setDescription(member.nickname);
 					message.channel.send("📛 Nickname set!", nickEmbed);
 				}).catch(() => message.channel.send("An error occurred setting the nickname. Please make sure I have permissions."));
 				return;
@@ -146,13 +138,12 @@ module.exports = {
 		case "av":
 		case "picture": {
 			if (!args[1]) return message.channel.send("Invalid parameters! You must specify an avatar!");
-			if (!(checkURL(args[1]))) return message.channel.send(`<:${emoji.x}> Please provide a valid image URL! Images can have extensions of \`jpeg\`, \`jpg\`, \`png\`, or \`gif\``);
+			if (!(checkURL(args[1]))) return message.channel.send(":x: Please provide a valid image URL! Images can have extensions of `jpeg`, `jpg`, `png`, or `gif`");
 			else {
 				message.channel.startTyping();
 				await client.user.setAvatar(args[1]);
 				let avatarEmbed = new Discord.MessageEmbed()
-					.setImage(client.user.displayAvatarURL({format: "png"}))
-					.setColor(colors.default);
+					.setImage(client.user.displayAvatarURL({format: "png"}));
 				await message.channel.send("👤 Avatar set!", avatarEmbed);
 				return message.channel.stopTyping();
 			}

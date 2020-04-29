@@ -1,4 +1,4 @@
-const { colors, developer } = require("../../config.json");
+const { developer } = require("../../config.json");
 const { core } = require("../../persistent.json");
 const { fetchUser } = require("../../coreFunctions.js");
 const humanizeDuration = require("humanize-duration");
@@ -10,10 +10,7 @@ module.exports = {
 		aliases: ["hi", "about", "bot"],
 		usage: "ping",
 		description: "Checks bot response time and shows information",
-		enabled: true,
-		docs: "all/ping",
-		permissions: ["VIEW_CHANNEL", "SEND_MESSAGES", "EMBED_LINKS", "USE_EXTERNAL_EMOJIS"],
-		cooldown: 5
+		enabled: true
 	},
 	do: async (message, client, args, Discord) => {
 		let developerArray = [];
@@ -28,7 +25,7 @@ module.exports = {
 			.addField("Client Ping", `${Math.round(client.ws.ping)} ms`)
 			.setFooter(`${client.user.tag} v${core.version}`, client.user.displayAvatarURL)
 			.setThumbnail(client.user.displayAvatarURL)
-			.setColor(colors.default);
+			.setColor("RANDOM");
 		message.reply("👋 Hi there! Here's some info:", embed).then((sent) => {
 			embed.addField("Edit Time", ms(new Date().getTime() - sent.createdTimestamp));
 			sent.edit(`<@${message.author.id}>, 👋 Hi there! Here's some info:`, embed);

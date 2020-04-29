@@ -1,10 +1,10 @@
 {
   "presence": {
     "type": "WATCHING",
-    "activity": "suggestions!",
+    "activity": "Maybe?",
     "status": "online"
   },
   "core": {
-      "version": "3.0.3"
+      "version": "1"
   }
 }

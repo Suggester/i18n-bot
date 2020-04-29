@@ -1,6 +1,6 @@
-const { dbQuery, permLevelToRole, checkConfig } = require("../../coreFunctions");
+const { permLevelToRole, checkPermissions } = require("../../coreFunctions");
 
-const { colors, prefix } = require("../../config.json");
+const { prefix } = require("../../config.json");
 
 module.exports = {
 	controls: {
@@ -9,23 +9,20 @@ module.exports = {
 		aliases: ["command", "howto", "prefix"],
 		usage: "help (command name)",
 		description: "Shows command information",
-		enabled: true,
-		docs: "all/help",
-		permissions: ["VIEW_CHANNEL", "SEND_MESSAGES", "EMBED_LINKS", "USE_EXTERNAL_EMOJIS"],
-		cooldown: 5
+		enabled: true
 	},
 	do: async (message, client, args, Discord) => {
-		let qServerDB = await dbQuery("Server", { id: message.guild.id });
-		let missingConfig = checkConfig(qServerDB);
-		let serverPrefix = (qServerDB && qServerDB.config && qServerDB.config.prefix) || prefix;
+
+		let permission = await checkPermissions(message.member, client);
 
 		if (!args[0]) {
 			let embed = new Discord.MessageEmbed()
-				.setDescription("Please see https://suggester.js.org/ for a command list and usage information!")
-				.setFooter(`My prefix in this server is ${serverPrefix}`)
-				.setColor(colors.default);
+				.setAuthor(`${client.user.username} Help`, client.user.displayAvatarURL({ format: "png" }))
+				.addField("General Commands", `\`${prefix}confess\` - Starts the prompt for submitting a confession\n\`${prefix}introduction\` - Starts the prompt for submitting an introduction\n\`${prefix}hug <user>\` - Gives someone a hug! <a:hug:616240950473129986>\n\`${prefix}help (command)\` - Shows this screen\n\`${prefix}ping\` - Shows bot response time`)
+				.setColor("RANDOM");
+			if (permission <= 1) embed.addField("Staff Commands", `\`${prefix}confessban <user>\` - Blacklists a user from submitting confessions\n\`${prefix}confessunban <user>\` - Unblacklists a user from submitting confessions\n\`${prefix}allowintro <user>\` - Allows a user to submit another introduction if they have already submitted one\n\`${prefix}botconfig\` - Configures various aspects of the bot`);
+			if (permission === 0) embed.addField("Bot Admin Commands", `\`${prefix}reboot\` - Reboots the bot\n\`${prefix}eval\` - Runs code\n\`${prefix}deploy\` - Deploys code from GitHub\n\`${prefix}db\` - Executes database query`);
 
-			if (missingConfig.length >= 1) embed.addField("Missing Config!", `This server has an incomplete configuration.\nA server manager can run \`${serverPrefix}setup\` to configure it.`);
 			return message.channel.send(embed);
 		}
 
@@ -38,14 +35,13 @@ module.exports = {
 		let commandInfo = command.controls;
 
 		let returnEmbed = new Discord.MessageEmbed()
-			.setColor(colors.default)
+			.setColor("RANDOM")
 			.setDescription(commandInfo.description)
 			.addField("Permission Level", permLevelToRole(commandInfo.permission), true)
-			.addField("Usage", `\`${serverPrefix}${commandInfo.usage}\``, true)
+			.addField("Usage", `\`${prefix}${commandInfo.usage}\``, true)
 			.setAuthor(`Command: ${commandName}`, client.user.displayAvatarURL({dynamic: true, format: "png"}));
 
 		commandInfo.aliases ? returnEmbed.addField(commandInfo.aliases.length > 1 ? "Aliases" : "Alias", commandInfo.aliases.join(", ")) : "";
-		if (commandInfo.docs && commandInfo.docs !== "") returnEmbed.addField("Documentation", `https://suggester.js.org/#/${commandInfo.docs}`);
 		if (!commandInfo.enabled) returnEmbed.addField("Additional Information", "⚠️ This command is currently disabled");
 
 		return message.channel.send(returnEmbed);

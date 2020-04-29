@@ -1,5 +1,5 @@
 const { dbQueryNoNew, dbModify } = require("../../coreFunctions.js");
-const { emoji, colors } = require("../../config.json");
+const { colors } = require("../../config.json");
 module.exports = {
 	controls: {
 		name: "db",
@@ -11,7 +11,7 @@ module.exports = {
 		permissions: ["VIEW_CHANNEL", "SEND_MESSAGES", "EMBED_LINKS", "USE_EXTERNAL_EMOJIS"]
 	},
 	do: async (message, client, args, Discord) => {
-		if (args.length < 4) return message.channel.send(`<:${emoji.x}> You must specify whether to query or modify, a collection name, query field, and query value.`);
+		if (args.length < 4) return message.channel.send(`:x: You must specify whether to query or modify, a collection name, query field, and query value.`);
 		let collection = args[1];
 		let field = args[2];
 		let value = args[3];
@@ -24,7 +24,7 @@ module.exports = {
 		let modifyValue;
 		let oldValue;
 		if (args[0].toLowerCase() === "modify") {
-			if (args.length < 6) return message.channel.send(`<:${emoji.x}> You must specify modification parameters!`);
+			if (args.length < 6) return message.channel.send(`:x: You must specify modification parameters!`);
 			modifyField = args[4];
 			oldValue = eval(`result.${modifyField}`);
 			modifyValue = args[5];
