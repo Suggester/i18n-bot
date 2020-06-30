@@ -2,34 +2,16 @@ require("dotenv").config();
 
 const Discord = require("discord.js");
 const { errorLog, fileLoader } = require("./coreFunctions.js");
-const { connect, connection } = require("mongoose");
-const autoIncrement = require("mongoose-sequence");
 const { basename } = require("path");
-const { presence } = require("./persistent.json");
 
 const client = new Discord.Client({
-	ws: { intents: Discord.Intents.ALL },
+	ws: { intents: Discord.Intents.NON_PRIVILEGED },
 	disableMentions: "everyone",
-	presence: { activity: { name: presence.activity || "", type: presence.type || "PLAYING" }, status: presence.status || "online" }
-});
-
-connect(process.env.MONGO, {
-	useNewUrlParser: true,
-	useUnifiedTopology: true
-})
-	.catch((err) => {
-		throw new Error(err);
-	});
-autoIncrement(connection);
-connection.on("open", () => {
-	console.log("Connected to MongoDB!");
-});
-connection.on("error", (err) => {
-	console.error("Connection error: ", err);
+	presence: { activity: { name: "for >help", type: "WATCHING" }, status: "online" }
 });
 
 client.commands = new Discord.Collection();
-client.cooldowns = new Discord.Collection();
+client.locales = new Discord.Collection();
 (async () => {
 	let eventFiles = await fileLoader("events");
 	for await (let file of eventFiles) {

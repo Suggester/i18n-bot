@@ -1,11 +1,8 @@
-const { dbQuery, dbModify, checkPermissions, errorLog } = require("../coreFunctions");
-const { prefix: defaultPrefix } = require("../config.json");
-const { Collection } = require("discord.js");
+const { checkPermissions, errorLog } = require("../coreFunctions");
+const { prefix: defaultPrefix, emoji } = require("../config.json");
 
 module.exports = async (Discord, client, message) => {
 	if (message.author.bot === true) return;
-
-	const permission = await checkPermissions(message.member, client);
 
 	const publicPrefixes = [defaultPrefix, `<@${client.user.id}>`, `<@!${client.user.id}>`];
 
@@ -21,14 +18,20 @@ module.exports = async (Discord, client, message) => {
 	const command = client.commands.find((c) => c.controls.name.toLowerCase() === commandName || c.controls.aliases && c.controls.aliases.includes(commandName));
 	if (!command) return;
 
-	if (command.controls.enabled === false) return message.channel.send(":x: This command is currently disabled.");
+	if (message.channel.type === "dm") return message.channel.send("Commands are currently unusable in DMs, please use them in a chat channel")
 
-	if (permission > command.controls.permission) return;
+	if (command.controls.enabled === false) return message.channel.send("This command is currently disabled.");
+
+	const permission = await checkPermissions(message.author, client);
+	if (permission > command.controls.permission) {
+		 if (permission === 10) message.channel.send(`<:${emoji.x}> This bot is locked to approved translators.`);
+		 return;
+	}
 
 	try {
 		return command.do(message, client, args, Discord);
 	} catch (err) {
-		message.channel.send(":x: Something went wrong with that command, please try again later.");
+		message.channel.send("Error: `Something went wrong`");
 		errorLog(err, "Command Handler", `Message Content: ${message.content}`);
 	}
 };

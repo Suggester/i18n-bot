@@ -1,6 +1,5 @@
-const { roles, err_hook, developer } = require("./config.json");
+const { err_hook, developer } = require("./config.json");
 const Discord = require("discord.js");
-let models = require("./utils/schemas");
 const { promises } = require("fs");
 const { resolve } = require("path");
 
@@ -9,20 +8,24 @@ module.exports = {
 	 * Returns permission level of inputted ID
 	 *
 	 * 11 - Blacklisted\
-	 * 10 - Everyone\
-	 * 3 - Server staff\
-	 * 2 - Server Admin\
-	 * 1 - Global Permissions\
-	 * 0 - Developer/Global Admin
+	 * 10 - Everyone
+	 * 1 - Staff
+	 * 0 - Developer
 	 *
 	 * @param member - Member object fetched from a server
 	 * @param client - The Discord client
 	 * @returns {Promise<number>}
 	 */
-	checkPermissions: async (member, client) => {
-		if (!member || !member.id || !client) return 10;
-		if (developer.includes(member.id)) return 0;
-		if (member.roles.cache.has(roles.staff)) return 1;
+	checkPermissions: async (user, client) => {
+		if (!user || !user.id || !client) return 10;
+		if (developer.includes(user.id)) return 0;
+		let hasStaffRole = false;
+		let staffroles = ["566029680168271892", "637723958015426560", "704756155045511238", "566029891590422566"];
+		staffroles.forEach(roleId => {
+			if (client.guilds.cache.get("566002482166104066").members.cache.get(user.id).roles.cache.has(roleId)) hasStaffRole = true;
+		});
+		if (hasStaffRole) return 1;
+		if (client.guilds.cache.get("566002482166104066").members.cache.get(user.id).roles.cache.has("704756126855594095")) return 9;
 		return 10;
 	},
 	permLevelToRole: (permLevel) => {
@@ -32,7 +35,7 @@ module.exports = {
 		case 0:
 			return "Bot Administrator";
 		case 1:
-			return "Server Staff";
+			return "Translation Manager";
 		case 10:
 			return "All Users";
 		default:
@@ -86,122 +89,6 @@ module.exports = {
 		return client.users.cache.get(foundId)
 			|| fetchUnknownUser(foundId)
 			|| null;
-	},
-	/**
-	 * Search the database for an id, creates a new entry if not found
-	 * @param {string} collection - The collection to query.
-	 * @param  {Object} query - The term to search for
-	 * @returns {Object}
-	 */
-	dbQuery: async (collection, query) => {
-		return await models[collection].findOne(
-			query
-		)
-			.then((res) => {
-				if (!res) {
-					return new models[collection](
-						query
-					).save();
-				}
-				return res;
-			}).catch((error) => {
-				console.log(error);
-			});
-	},
-	/**
-	 * Search the database for some parameters and return all entries that match, does not create a new entry if not found
-	 * @param {string} collection - The collection to query.
-	 * @param  {Object} query - The term to search for
-	 * @returns {Object}
-	 */
-	dbQueryAll: async (collection, query) => {
-		return await models[collection].find(
-			query
-		)
-			.then((res) => {
-				if (!res) {
-					return null;
-				} else {
-					return res;
-				}
-			}).catch((error) => {
-				console.log(error);
-			});
-	},
-	/**
-	 * Search the database for some parameters, returns one entry and does not create a new entry if not found
-	 * @param {string} collection - The collection to query.
-	 * @param  {Object} query - The term to search for
-	 * @returns {Object}
-	 */
-	dbQueryNoNew: async (collection, query) => {
-		if (!models[collection]) return 0;
-		return await models[collection].findOne(
-			query
-		)
-			.then((res) => {
-				if (!res) {
-					return null;
-				} else {
-					return res;
-				}
-			}).catch((error) => {
-				console.log(error);
-			});
-	},
-	/**
-	 * Modify the database by providing either the userId or serverId
-	 * @param {string} collection - Who should be modified, user or server.
-	 * @param  {Snowflake | string} id - The id of the user/server
-	 * @param {Object} modify - Should the user/server be blocked or unblocked
-	 * @returns {Object}
-	 */
-	dbModifyId: async (collection, id, modify) => {
-		modify.id = id;
-		return await models[collection].findOne({
-			id: id
-		})
-			.then(async (res) => {
-				if (!res) {
-					return new models[collection](
-						modify
-					).save();
-				}
-				await res.update(modify);
-				return res;
-			});
-	},
-	/**
-	 * Modify the database by providing either the userId or serverId.
-	 *
-	 * *Note: Does not create new if not found.*
-	 * @param {string} collection - Who should be modified, user or server.
-	 * @param {Object} term - Which to modify
-	 * @param {Object} query - Which to modify
-	 * @param {Object} modify - What to change it to
-	 * @returns {Promise}
-	 */
-	dbModify(collection, query, modify) {
-		return models[collection].findOneAndUpdate(query, modify)
-			.then((res) => {
-				return res;
-			});
-	},
-	/**
-	 * Delete one document
-	 * @param {string} collection - Which collection the document is in
-	 * @param {Object} query - Which to delete
-	 * @returns {Promise<void>}
-	 */
-	dbDeleteOne: async (collection, query) => {
-		return await models[collection].findOne(
-			query
-		)
-			.then(async (res) => {
-				if (!res) return undefined;
-				await res.deleteOne();
-				return res;
-			});
 	}
 };
 /**

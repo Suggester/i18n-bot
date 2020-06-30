@@ -1,30 +1,19 @@
-const { permLevelToRole, checkPermissions } = require("../../coreFunctions");
+const { permLevelToRole } = require("../../coreFunctions");
 
 const { prefix } = require("../../config.json");
 
 module.exports = {
 	controls: {
 		name: "help",
-		permission: 10,
+		permission: 9,
 		aliases: ["command", "howto", "prefix"],
 		usage: "help (command name)",
 		description: "Shows command information",
-		enabled: true
+		enabled: true,
+		dm_allowed: true
 	},
-	do: async (message, client, args, Discord) => {
-
-		let permission = await checkPermissions(message.member, client);
-
-		if (!args[0]) {
-			let embed = new Discord.MessageEmbed()
-				.setAuthor(`${client.user.username} Help`, client.user.displayAvatarURL({ format: "png" }))
-				.addField("General Commands", `\`${prefix}confess\` - Starts the prompt for submitting a confession\n\`${prefix}introduction\` - Starts the prompt for submitting an introduction\n\`${prefix}hug <user>\` - Gives someone a hug! <a:hug:616240950473129986>\n\`${prefix}help (command)\` - Shows this screen\n\`${prefix}ping\` - Shows bot response time`)
-				.setColor("RANDOM");
-			if (permission <= 1) embed.addField("Staff Commands", `\`${prefix}confessban <user>\` - Blacklists a user from submitting confessions\n\`${prefix}confessunban <user>\` - Unblacklists a user from submitting confessions\n\`${prefix}allowintro <user>\` - Allows a user to submit another introduction if they have already submitted one\n\`${prefix}botconfig\` - Configures various aspects of the bot`);
-			if (permission === 0) embed.addField("Bot Admin Commands", `\`${prefix}reboot\` - Reboots the bot\n\`${prefix}eval\` - Runs code\n\`${prefix}deploy\` - Deploys code from GitHub\n\`${prefix}db\` - Executes database query`);
-
-			return message.channel.send(embed);
-		}
+	do: async (message, client, args) => {
+		if (!args[0]) return message.channel.send(`= ${client.user.username} Command List =\n\n[ Translators ]${client.commands.filter(c => c.controls.permission === 9).map(c => `\n- ${prefix}${c.controls.usage} - ${c.controls.description}`)}\n\n[ Translation Managers ]${client.commands.filter(c => c.controls.permission === 1).map(c => `\n- ${prefix}${c.controls.usage} - ${c.controls.description}`)}\n\n[ Admin Commands ]${client.commands.filter(c => c.controls.permission === 0).map(c => `\n- ${prefix}${c.controls.usage} - ${c.controls.description}`)}`, { code: "asciidoc"});
 
 		let commandName = args[0].toLowerCase();
 
@@ -34,17 +23,7 @@ module.exports = {
 
 		let commandInfo = command.controls;
 
-		let returnEmbed = new Discord.MessageEmbed()
-			.setColor("RANDOM")
-			.setDescription(commandInfo.description)
-			.addField("Permission Level", permLevelToRole(commandInfo.permission), true)
-			.addField("Usage", `\`${prefix}${commandInfo.usage}\``, true)
-			.setAuthor(`Command: ${commandName}`, client.user.displayAvatarURL({dynamic: true, format: "png"}));
-
-		commandInfo.aliases ? returnEmbed.addField(commandInfo.aliases.length > 1 ? "Aliases" : "Alias", commandInfo.aliases.join(", ")) : "";
-		if (!commandInfo.enabled) returnEmbed.addField("Additional Information", "⚠️ This command is currently disabled");
-
-		return message.channel.send(returnEmbed);
+		return message.channel.send(`= Command: ${commandName} =\n${commandInfo.description}\n\n- Permission Level: ${permLevelToRole(commandInfo.permission)}\n- Usage: ${prefix}${commandInfo.usage}\n${commandInfo.aliases ? (commandInfo.aliases.length > 1 ? "- Aliases: " : "- Alias: ") + commandInfo.aliases.join(", ") : ""}`, { code: "asciidoc" });
 
 	}
 };

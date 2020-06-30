@@ -10,7 +10,8 @@ module.exports = {
 		usage: "eval <code>",
 		description: "Runs code",
 		enabled: true,
-		permissions: ["VIEW_CHANNEL", "SEND_MESSAGES"]
+		permissions: ["VIEW_CHANNEL", "SEND_MESSAGES"],
+		dm_allowed: true
 	},
 	/* eslint-disable-next-line no-unused-vars */
 	do: async (message, client, args, Discord) => {
