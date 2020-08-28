@@ -1,5 +1,4 @@
-const { err_hook, developer } = require("./config.json");
-const Discord = require("discord.js");
+const { developer } = require("./config.json");
 const { promises } = require("fs");
 const { resolve } = require("path");
 
@@ -38,25 +37,6 @@ module.exports = {
 		}
 	},
 	errorLog: (err, type, footer) => {
-		if (!err) return;
-		let errorText = "Error Not Set";
-		if (err.stack) {
-			console.error((require("chalk")).red(err.stack));
-			errorText = err.stack;
-		} else if (err.error) {
-			console.error((require("chalk")).red(err.error));
-			errorText = err.error;
-		} else return;
-		let embed = new Discord.MessageEmbed()
-			.setAuthor(type)
-			.setTitle(err.message ? err.message.substring(0, 256) : "No Message Value")
-			.setDescription(`\`\`\`js\n${(errorText).length >= 1000 ? (errorText).substring(0, 1000) + " content too long..." : err.stack}\`\`\``)
-			.setColor("DARK_RED")
-			.setTimestamp()
-			.setFooter(footer);
-
-		let hook = new Discord.WebhookClient(err_hook.id, err_hook.token);
-		hook.send(embed);
 	},
 	/**
 	 * Fetch a user
