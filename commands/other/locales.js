@@ -22,8 +22,7 @@ module.exports = {
 				for await (let filename of files.filter(f => f.endsWith(".json"))) {
 					let file = require(`../../i18n/${filename}`);
 					let totalLocaleStrings = Object.keys(file.list).filter(s => list[s]).length;
-					let localeInfo = `\`[${file.settings.code}]
-					g\` **${file.settings.native} (${file.settings.english})** (${totalLocaleStrings}/${totalStrings}, ${Math.round((totalLocaleStrings / totalStrings + Number.EPSILON) * 100)}%)`;
+					let localeInfo = `\`[${file.settings.code}]\` **${file.settings.native} (${file.settings.english})** (${totalLocaleStrings}/${totalStrings}, ${Math.round((totalLocaleStrings / totalStrings + Number.EPSILON) * 100)}%)`;
 					if ((file.settings.allowed && file.settings.allowed.includes(message.author.id)) || (file.settings.proofreader && file.settings.proofreader.includes(message.author.id))) selfLocaleArr.push(localeInfo);
 					else localeArr.push(localeInfo);
 				}

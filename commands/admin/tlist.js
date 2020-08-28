@@ -4,6 +4,7 @@ module.exports = {
 	controls: {
 		name: "tlist",
 		permission: 1,
+		usage: "tlist",
 		description: "Shows list of translators",
 		enabled: true,
 		permissions: ["VIEW_CHANNEL", "SEND_MESSAGES", "EMBED_LINKS"],
