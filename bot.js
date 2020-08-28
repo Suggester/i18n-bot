@@ -1,35 +1,25 @@
 require("dotenv").config();
 
-const Discord = require("discord.js");
+const Eris = require("eris");
+require("pluris")(Eris, { endpoints: false });
+const bot = new Eris(process.env.TOKEN, {
+	intents: [
+		"guilds",
+		"guildMessages",
+		"directMessages",
+		"directMessageReactions"
+	],
+	allowedMentions: {
+		everyone: false,
+		users: true,
+		roles: true
+	},
+	restMode: true
+});
 const { errorLog, fileLoader } = require("./coreFunctions.js");
-const { connect, connection } = require("mongoose");
-const autoIncrement = require("mongoose-sequence");
-const { basename } = require("path");
-const { presence } = require("./persistent.json");
+const { basename, dirname } = require("path");
 
-const client = new Discord.Client({
-	ws: { intents: Discord.Intents.ALL },
-	disableMentions: "everyone",
-	presence: { activity: { name: presence.activity || "", type: presence.type || "PLAYING" }, status: presence.status || "online" }
-});
-
-connect(process.env.MONGO, {
-	useNewUrlParser: true,
-	useUnifiedTopology: true
-})
-	.catch((err) => {
-		throw new Error(err);
-	});
-autoIncrement(connection);
-connection.on("open", () => {
-	console.log("Connected to MongoDB!");
-});
-connection.on("error", (err) => {
-	console.error("Connection error: ", err);
-});
-
-client.commands = new Discord.Collection();
-client.cooldowns = new Discord.Collection();
+bot.commands = new Eris.Collection({});
 (async () => {
 	let eventFiles = await fileLoader("events");
 	for await (let file of eventFiles) {
@@ -38,9 +28,9 @@ client.cooldowns = new Discord.Collection();
 		let event = require(file);
 		let eventName = basename(file).split(".")[0];
 
-		client.on(eventName, (...args) => {
+		bot.on(eventName, (...args) => {
 			try {
-				event(Discord, client, ...args);
+				event(Eris, bot, ...args);
 			}
 			catch (err) {
 				errorLog(err, "Event Handler", `Event: ${eventName}`);
@@ -55,21 +45,31 @@ client.cooldowns = new Discord.Collection();
 
 		let command = require(file);
 		let commandName = basename(file).split(".")[0];
+		let dirArray = dirname(file).split("/");
+		command.controls.module = dirArray[dirArray.length-1];
 
-		client.commands.set(commandName, command);
+		bot.commands.set(commandName, command);
 		console.log("[Command] Loaded", commandName);
 	}
 })();
 
-client.login(process.env.TOKEN)
-	.catch(console.error);
+bot.connect().catch(console.error);
 
-client.on("error", (err) => {
+bot.on("error", (err) => {
 	errorLog(err, "error", "something happened and idk what");
 });
-client.on("warn", (warning) => {
+bot.on("warn", (warning) => {
 	console.warn(warning);
 });
 process.on("unhandledRejection", (err) => { // this catches unhandledPromiserejectionWarning and other unhandled rejections
 	errorLog(err, "unhandledRejection", "oof something is broken x.x");
 });
+
+Object.defineProperties(Eris.User.prototype, {
+	tag: {
+		get() {
+			return `${this.username}#${this.discriminator}`;
+		}
+	}
+});
+

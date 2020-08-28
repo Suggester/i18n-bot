@@ -1,5 +1,3 @@
-const { release } = require("../config.json");
-
-module.exports = async (Discord, client) => {
-	console.log(`Logged in as ${client.user.tag}!`);
+module.exports = async (Eris, bot) => {
+	console.log(`Logged in as ${bot.user.tag}!`);
 };

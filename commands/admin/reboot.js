@@ -1,4 +1,3 @@
-const { coreLog } = require("../../coreFunctions.js");
 module.exports = {
 	controls: {
 		name: "reboot",
@@ -7,11 +6,11 @@ module.exports = {
 		usage: "reboot",
 		description: "Reboots the bot by exiting the process",
 		enabled: true,
-		permissions: ["VIEW_CHANNEL", "SEND_MESSAGES"]
+		permissions: ["VIEW_CHANNEL", "SEND_MESSAGES"],
+		dm_allowed: true
 	},
-	do: async message => {
-		await message.channel.send("Shutting down...");
-		await coreLog(`🔌 ${message.author.tag} (\`${message.author.id}\`) initiated a reboot`);
+	do: async (message, bot) => {
+		await bot.createMessage(message.channel.id, "Shutting down...");
 		return process.exit(0);
 	}
 };

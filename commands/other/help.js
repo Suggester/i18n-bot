@@ -1,4 +1,4 @@
-const { permLevelToRole, checkPermissions } = require("../../coreFunctions");
+const { permLevelToRole } = require("../../coreFunctions");
 
 const { prefix } = require("../../config.json");
 
@@ -9,42 +9,44 @@ module.exports = {
 		aliases: ["command", "howto", "prefix"],
 		usage: "help (command name)",
 		description: "Shows command information",
-		enabled: true
+		enabled: true,
+		dm_allowed: true
 	},
-	do: async (message, client, args, Discord) => {
-
-		let permission = await checkPermissions(message.member, client);
-
-		if (!args[0]) {
-			let embed = new Discord.MessageEmbed()
-				.setAuthor(`${client.user.username} Help`, client.user.displayAvatarURL({ format: "png" }))
-				.addField("General Commands", `\`${prefix}confess\` - Starts the prompt for submitting a confession\n\`${prefix}introduction\` - Starts the prompt for submitting an introduction\n\`${prefix}hug <user>\` - Gives someone a hug! <a:hug:616240950473129986>\n\`${prefix}help (command)\` - Shows this screen\n\`${prefix}ping\` - Shows bot response time`)
-				.setColor("RANDOM");
-			if (permission <= 1) embed.addField("Staff Commands", `\`${prefix}confessban <user>\` - Blacklists a user from submitting confessions\n\`${prefix}confessunban <user>\` - Unblacklists a user from submitting confessions\n\`${prefix}allowintro <user>\` - Allows a user to submit another introduction if they have already submitted one\n\`${prefix}botconfig\` - Configures various aspects of the bot`);
-			if (permission === 0) embed.addField("Bot Admin Commands", `\`${prefix}reboot\` - Reboots the bot\n\`${prefix}eval\` - Runs code\n\`${prefix}deploy\` - Deploys code from GitHub\n\`${prefix}db\` - Executes database query`);
-
-			return message.channel.send(embed);
-		}
+	do: async (message, bot, args) => {
+		if (!args[0]) return bot.createMessage(message.channel.id, { embed: {
+			title: `${bot.user.username} Help`,
+			color: 0x7e6bf0,
+			fields: [{
+				name: "General Commands",
+				value: bot.commands.filter(c => c.controls.module === "other").map(c => `\`${prefix}${c.controls.usage}\`: ${c.controls.description}`).join("\n")
+			},
+			{
+				name: "Administrative Commands",
+				value: bot.commands.filter(c => c.controls.module === "admin").map(c => `\`${prefix}${c.controls.usage}\`: ${c.controls.description}`).join("\n")
+			}]
+		}});
 
 		let commandName = args[0].toLowerCase();
-
-		const command = client.commands.find((c) => c.controls.name.toLowerCase() === commandName || c.controls.aliases && c.controls.aliases.includes(commandName));
-
-		if (!command) return;
-
+		const command = bot.commands.find((c) => c.controls.name.toLowerCase() === commandName || c.controls.aliases && c.controls.aliases.includes(commandName));
+		if (!command) return bot.createMessage(message.channel.id, ":x: That is not a valid command");
 		let commandInfo = command.controls;
 
-		let returnEmbed = new Discord.MessageEmbed()
-			.setColor("RANDOM")
-			.setDescription(commandInfo.description)
-			.addField("Permission Level", permLevelToRole(commandInfo.permission), true)
-			.addField("Usage", `\`${prefix}${commandInfo.usage}\``, true)
-			.setAuthor(`Command: ${commandName}`, client.user.displayAvatarURL({dynamic: true, format: "png"}));
-
-		commandInfo.aliases ? returnEmbed.addField(commandInfo.aliases.length > 1 ? "Aliases" : "Alias", commandInfo.aliases.join(", ")) : "";
-		if (!commandInfo.enabled) returnEmbed.addField("Additional Information", "⚠️ This command is currently disabled");
-
-		return message.channel.send(returnEmbed);
-
+		return bot.createMessage(message.channel.id, {
+			embed: {
+				title: `${prefix}${commandInfo.name}`,
+				description: commandInfo.description,
+				color: 0x7e6bf0,
+				fields: [{
+					name: "Usage",
+					value: commandInfo.usage
+				}, {
+					name: "Permission Level",
+					value: permLevelToRole(commandInfo.permission)
+				}, {
+					name: "Alias(es)",
+					value: commandInfo.aliases ? commandInfo.aliases.map(a => `\`${prefix}${a}\``).join(", ") : "None"
+				}]
+			}
+		});
 	}
 };
