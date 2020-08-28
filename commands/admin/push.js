@@ -13,7 +13,7 @@ module.exports = {
 		let sent = await bot.createMessage(message.channel.id, "Pushing i18n folder to GitHub...");
 		exec(`cd i18n && git add . && git commit -m "Push new translation changes (${message.author.username})" && git push origin master`).then(async result => {
 			if (bot.getChannel(logs)) await bot.createMessage(logs, `📥 ${message.author.tag} (\`${message.author.id}\`) pushed translations to GitHub`);
-			return sent.edit(result.stdout.substr(0, 1900), { code: "xl" });
+			return sent.edit(`\`\`\`xl\n${result.stdout.substr(0, 1900)}\n\`\`\``);
 		}).catch(err => sent.edit(`Error: \`${err.stderr}\``));
 	}
 };
