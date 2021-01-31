@@ -47,18 +47,19 @@ module.exports = {
 			await bot.createMessage(m.channel.id, `:+1: You can translate for locale \`${localeCode}\`. Starting the process now!`);
 			await prompt(m.channel, localeCode);
 		});
+		let skipped = [];
 		async function prompt(channel, locale, forceString) {
 			const translationFile = require(`../../i18n/${locale}.json`);
 			// eslint-disable-next-line no-case-declarations
 			let strName = forceString || null;
 			if (!strName) {
 				// eslint-disable-next-line no-case-declarations
-				let choices = args[0] ? Object.keys(list).filter(str => !translationFile.list[str] && list[str].string.toLowerCase().includes(args.join(" ").toLowerCase())) : Object.keys(list).filter(str => !translationFile.list[str]);
+				let choices = args[0] ? Object.keys(list).filter(str => !translationFile.list[str] && !skipped.includes(str) && list[str].string.toLowerCase().includes(args.join(" ").toLowerCase())) : Object.keys(list).filter(str => !translationFile.list[str] && !skipped.includes(str));
 				if (args[0] && !sent) {
 					await bot.createMessage(channel.id, `:information_source: You are translating strings that meet the search of \`${args.join(" ").toLowerCase()}\``);
 					sent = true;
 				}
-				if (!choices.length) return bot.createMessage(channel.id, ":tada: All strings have been translated for this language!");
+				if (!choices.length) return bot.createMessage(channel.id, ":tada: All strings have been translated for this language! If you skipped any strings please restart translation as skipped strings are no longer available to translate during the current translation session.");
 				// eslint-disable-next-line no-case-declarations
 				strName = choices[Math.floor(Math.random() * choices.length)];
 			}
@@ -71,13 +72,13 @@ module.exports = {
 				description: `Please translate the following string into ${translationFile.settings.english}. You have 5 minutes to respond, send \`cancel\` to cancel or \`skip\` to skip.`,
 				fields: [{
 					name: "English String",
-					value: str.string
+					value: str.string || "This string has no content, please post in #translator-chat to bring the issue to the team's attention"
 				}, {
 					name: "Raw Content",
 					value: `\`\`\`\n${str.string}\n\`\`\``
 				}, {
 					name: "Context",
-					value: str.context
+					value: str.context || "This string has no context, please post in #translator-chat to bring the issue to the team's attention"
 				}],
 				color: 0x7e6bf0
 			};
@@ -94,6 +95,7 @@ module.exports = {
 			if (translation.toLowerCase() === "cancel") return bot.createMessage(channel.id, ":+1: Translation cancelled. Thanks for your contributions!");
 			if (translation.toLowerCase() === "skip") {
 				await bot.createMessage(channel.id, ":+1: Skipping string");
+				skipped.push(strName);
 				return prompt(channel, locale);
 			}
 			if (str.replaced) {
