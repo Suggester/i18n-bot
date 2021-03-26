@@ -23,6 +23,7 @@ module.exports = {
 			let setting = args[1].toLowerCase();
 			let value = args.splice(2).join(" ");
 			foundLocale.settings[setting] = (value === "null" ? null : value);
+			console.log(foundLocale, foundLocale.settings, setting)
 			fs.writeFile(`i18n/${foundLocale.settings.code}.json`, JSON.stringify(foundLocale), async function (saveErr) {
 				if (saveErr) return bot.createMessage(message.channel.id, `:x: An error occurred: \`${saveErr.stack}\``);
 				if (bot.getChannel(logs)) await bot.createMessage(logs, `🛠️ Setting \`${setting}\` was set to \`${value}\` in locale \`${foundLocale.settings.code}\` by ${message.author.tag} (\`${message.author.id}\`)`);
