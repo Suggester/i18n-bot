@@ -67,6 +67,7 @@ module.exports = {
 			// eslint-disable-next-line no-case-declarations
 			let str = list[strName];
 			let translatedStr = translationFile.list[strName];
+			console.log(str.string);
 			let proofEmbed = {
 				footer: {
 					text: strName
