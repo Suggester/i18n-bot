@@ -67,7 +67,7 @@ module.exports = {
 			// eslint-disable-next-line no-case-declarations
 			let str = list[strName];
 			let translatedStr = translationFile.list[strName];
-			console.log(str.string);
+			if (`\`\`\`\n${translatedStr}\n\`\`\``.length > 1024) return bot.createMessage(channel.id, ":x: The translation of this string is too long, please re-translate it using `>mt`");
 			let proofEmbed = {
 				footer: {
 					text: strName
