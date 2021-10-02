@@ -28,13 +28,10 @@ module.exports = {
 				}
 				let embed = {
 					title: "Locale List",
+					description: localeArr.length > 0 ? localeArr.join("\n") : "No Locales Found",
 					fields: [{
 						name: "Your Locales",
 						value: selfLocaleArr.length > 0 ? selfLocaleArr.join("\n") : "You have no registered locales"
-					},
-					{
-						name: "Other Locales",
-						value: localeArr.length > 0 ? localeArr.join("\n") : "No Locales Found"
 					}],
 					color: 0x7289da
 				};
